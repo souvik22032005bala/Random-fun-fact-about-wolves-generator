@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wolf Fun Facts Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #222831;
+      --text: #eeeeee;
+      --accent: #00adb5;
+      --transition: 0.4s;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Roboto', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: background var(--transition);
+    }
+    .container {
+      background: rgba(34, 40, 49, 0.95);
+      border-radius: 18px;
+      box-shadow: 0 6px 32px rgba(0,0,0,0.18);
+      padding: 2.5rem 2rem 2rem 2rem;
+      max-width: 420px;
+      width: 90vw;
+      text-align: center;
+      transition: background var(--transition);
+    }
+    h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2rem;
+      margin-bottom: 1.2rem;
+      color: var(--accent);
+      letter-spacing: 1px;
+      transition: color var(--transition);
+    }
+    #fact {
+      font-size: 1.2rem;
+      margin: 1.5rem 0 2rem 0;
+      min-height: 80px;
+      color: var(--text);
+      transition: color var(--transition);
+    }
+    button, .share-btn {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      padding: 0.9rem 2.2rem;
+      font-size: 1.1rem;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background var(--transition), color var(--transition), transform 0.1s;
+      margin: 0.2rem 0.3rem;
+      display: inline-block;
+      text-decoration: none;
+    }
+    button:active, .share-btn:active {
+      transform: scale(0.97);
+    }
+    .share-group {
+      margin-top: 0.5rem;
+    }
+    .share-btn {
+      padding: 0.7rem 1.1rem;
+      font-size: 1rem;
+      background: #1da1f2; /* Twitter blue by default, will override for LinkedIn */
+      color: #fff;
+    }
+    .share-btn.linkedin {
+      background: #0077b5;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 1.2rem 0.5rem 1.5rem 0.5rem;
+        max-width: 98vw;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      #fact {
+        font-size: 1rem;
+      }
+      button, .share-btn {
+        font-size: 1rem;
+        padding: 0.7rem 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Wolf Fun Facts</h1>
+    <div id="fact">Loading...</div>
+    <button id="newFactBtn">Show Me a Fun Fact</button>
+    <!-- Share Buttons -->
+    <div class="share-group">
+      <a href="#" id="twitterShare" class="share-btn" target="_blank" rel="noopener" title="Share on Twitter">Share on Twitter</a>
+      <a href="#" id="linkedinShare" class="share-btn linkedin" target="_blank" rel="noopener" title="Share on LinkedIn">Share on LinkedIn</a>
+    </div>
+  </div>
+  <script>
+    // Facts array (previously in facts.json)
+    const facts = [
+      "Wolves live and hunt in family groups called packs, usually led by a breeding pair.",
+      "A wolf’s howl can be heard up to 10 kilometers (6 miles) away in the right conditions.",
+      "Wolves have a bite force of up to 1,500 pounds per square inch, much stronger than most dogs.",
+      "Wolves can run as fast as 60 km/h (about 37 mph) for short distances when chasing prey.",
+      "Wolves communicate using howls, barks, whines, and body language to coordinate with their pack.",
+      "A wolf can eat up to 9 kilograms (about 20 pounds) of meat in one meal after a successful hunt.",
+      "Wolves play a vital role in keeping ecosystems healthy by controlling populations of large herbivores.",
+      "Wolf pups are born blind and deaf, relying completely on their mother and pack for survival.",
+      "Wolves have webbed feet that help them move easily across snow and swim in rivers.",
+      "Wolves are found in North America, Europe, Asia, and the Middle East, adapting to many habitats."
+    ];
+
+    // Color palettes for facts (auto-generated pastel colors)
+    const colorPalettes = [
+      { bg: "#222831", text: "#eeeeee", accent: "#00adb5" },
+      { bg: "#393e46", text: "#f8f3d4", accent: "#ffb830" },
+      { bg: "#22223b", text: "#f2e9e4", accent: "#c9ada7" },
+      { bg: "#232946", text: "#fffffe", accent: "#eebbc3" },
+      { bg: "#2d334a", text: "#f6f7f8", accent: "#ffd803" },
+      { bg: "#1b2430", text: "#f0ece2", accent: "#ff8303" },
+      { bg: "#222831", text: "#d6e6f2", accent: "#ffb6b9" },
+      { bg: "#22223b", text: "#f2e9e4", accent: "#9a8c98" },
+      { bg: "#232946", text: "#b8c1ec", accent: "#eebbc3" },
+      { bg: "#393e46", text: "#f8f3d4", accent: "#00adb5" }
+    ];
+
+    let lastFactIndex = -1;
+    let currentFact = facts[0];
+
+    // Utility to set color scheme
+    function setColorScheme(idx) {
+      const palette = colorPalettes[idx % colorPalettes.length];
+      document.documentElement.style.setProperty('--bg', palette.bg);
+      document.documentElement.style.setProperty('--text', palette.text);
+      document.documentElement.style.setProperty('--accent', palette.accent);
+    }
+
+    // Utility to show a random fact
+    function showRandomFact() {
+      if (facts.length === 0) return;
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * facts.length);
+      } while (facts.length > 1 && idx === lastFactIndex);
+      lastFactIndex = idx;
+      currentFact = facts[idx];
+      document.getElementById('fact').textContent = currentFact;
+      setColorScheme(idx);
+      updateShareLinks();
+    }
+
+    // Update share links with the current fact
+    function updateShareLinks() {
+      const url = encodeURIComponent(window.location.href);
+      const text = encodeURIComponent(currentFact + " #GenAIwithPieces");
+      // Twitter
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+      document.getElementById('twitterShare').href = twitterUrl;
+      // LinkedIn
+      const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}&summary=${text}`;
+      document.getElementById('linkedinShare').href = linkedinUrl;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      showRandomFact();
+      document.getElementById('newFactBtn').addEventListener('click', showRandomFact);
+      // Also update share links on first load
+      updateShareLinks();
+    });
+  </script>
+</body>
+</html>
